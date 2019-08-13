@@ -1,0 +1,58 @@
+#######################################################################################
+##########1.prepare the training data summary statistics with thresholds###############
+#######################################################################################
+
+###INPUT: The downloaded reaction time GWAS summary statistcis file, sumstats_CCACE_Reaction_Time_2018.txt
+###Extrat all potentially needed iterms: snpid ,A1, A2, Zscore and P-value 
+awk 'NR>1{{print $3, $4, $5, $7, $6}}' <sumstats_CCACE_Reaction_Time_2018.txt > CCACE_Reaction_Time_2018.txt
+###Apply a series of p-value citoffs 
+awk 'NR>0{print $1,$2,$4}' CCACE_Reaction_Time_2018.txt > CCACE_Reaction_Time_2018_prs_c1.txt
+awk '$5<0.8{print $1,$2,$4}' CCACE_Reaction_Time_2018.txt > CCACE_Reaction_Time_2018_prs_c2.txt
+awk '$5<0.5{print $1,$2,$4}' CCACE_Reaction_Time_2018.txt > CCACE_Reaction_Time_2018_prs_c3.txt
+awk '$5<0.4{print $1,$2,$4}' CCACE_Reaction_Time_2018.txt > CCACE_Reaction_Time_2018_prs_c4.txt
+awk '$5<0.3{print $1,$2,$4}' CCACE_Reaction_Time_2018.txt > CCACE_Reaction_Time_2018_prs_c5.txt
+awk '$5<0.2{print $1,$2,$4}' CCACE_Reaction_Time_2018.txt > CCACE_Reaction_Time_2018_prs_c6.txt
+awk '$5<0.1{print $1,$2,$4}' CCACE_Reaction_Time_2018.txt > CCACE_Reaction_Time_2018_prs_c7.txt
+awk '$5<0.08{print $1,$2,$4}' CCACE_Reaction_Time_2018.txt > CCACE_Reaction_Time_2018_prs_c8.txt
+awk '$5<0.05{print $1,$2,$4}' CCACE_Reaction_Time_2018.txt > CCACE_Reaction_Time_2018_prs_c9.txt
+awk '$5<0.02{print $1,$2,$4}' CCACE_Reaction_Time_2018.txt > CCACE_Reaction_Time_2018_prs_c10.txt
+awk '$5<0.01{print $1,$2,$4}' CCACE_Reaction_Time_2018.txt > CCACE_Reaction_Time_2018_prs_c11.txt
+###take the unique SNPs (remove repeated rows in the file if any)
+for l in `seq 1 11`
+
+do 
+
+sort -u -k1,1 CCACE_Reaction_Time_2018_prs_c${l}.txt > CCACE_Reaction_Time_2018_prs_c${l}_u.txt
+
+done 
+
+####################################################################
+##########2.prune the SNP dataset of the testing set################
+####################################################################
+
+###the input SNP dataset is named PING_updated_qc_hwe_cleaned_maf_gene_hwe (in plink bfile format)
+###the output SNP dataset is named PING_updated_qc_hwe_cleaned_maf_gene_hwe_pruned
+###the three parameters are window size, step size, and R^2 threshold (--indep-pairwise 50 5 0.2)
+~/plink --bfile PING_updated_qc_hwe_cleaned_maf_gene_hwe --indep-pairwise 50 5 0.2 --out PING_updated_qc_hwe_cleaned_maf_gene_hwe_pruned
+~/plink --bfile PING_updated_qc_hwe_cleaned_maf_gene_hwe  --extract PING_updated_qc_hwe_cleaned_maf_gene_hwe_pruned.prune.in --make-bed  --out PING_updated_qc_hwe_cleaned_maf_gene_hwe_pruned
+
+####################################################################
+##########2.get the polygenic scores ###############################
+####################################################################
+###the input files are 1) the SNP dataset PING_updated_qc_hwe_cleaned_maf_gene_hwe_pruned; 
+###and 2) the GWAS summary statistics CCACE_Reaction_Time_2018_prs_c*_u.txt
+###the output files are Reaction_PING_c*.profile
+
+for l in `seq 1 11`
+
+do 
+
+~/plink --bfile PING_updated_qc_hwe_cleaned_maf_gene_hwe_pruned   --score  CCACE_Reaction_Time_2018_prs_c${l}_u.txt  --out Reaction_PING_c${l}
+
+done 
+
+
+
+
+
+
