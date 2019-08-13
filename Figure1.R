@@ -145,7 +145,7 @@ for (h in 1:length(effect_cor)){
     snps.temp<-as.numeric(substring(snps.temp0, 4))
     beta.temp<-m.temp1$all$eqtls$beta
     eqtl.temp<-data.frame(pvalue.temp,snps.temp,beta.temp)
-    ######
+    #######
     dim(x.test)
     ####################training data2############################
     ####Create three SlicedData objects for the analysis
