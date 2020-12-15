@@ -1,0 +1,27 @@
+#######################################################################################
+##########1.prepare each set of GWAS summary statistics with LDSC######################
+#######################################################################################
+##sumstats_CCACE_Reaction_Time_2018_n330069.txt can be freely downloaded from https://www.ccace.ed.ac.uk/node/335
+##for example, 
+
+awk 'NR>1{{print $3, $4, $5, $7, $6}}' < sumstats_CCACE_Reaction_Time_2018_n330069.txt > CCACE_Reaction_Time_2018_n330069.txt
+awk 'BEGIN{print "snpid A1 A2 BETA P-value"}{print}' CCACE_Reaction_Time_2018_n330069.txt > CCACE_Reaction_Time_2018_n330069_w_hm3.txt
+
+~/ldsc/munge_sumstats.py \
+--sumstats CCACE_Reaction_Time_2018_n330069_w_hm3.txt \
+--N 330069 \
+--out CCACE_Reaction_Time_2018_n330069_w_hm3 \
+--merge-alleles w_hm3.snplist
+
+
+######################################################################################
+##########2.estimate the pairwise genetic correlation with summary statistics#########
+######################################################################################
+
+##for example, the genetic correlation between thalamus proper and reaction time 
+
+~/ldsc/ldsc.py \
+--rg CCACE_Reaction_Time_2018_n330069_w_hm3.gz,thalamus_proper.sumstats.gz \
+--ref-ld-chr ~/eur_w_ld_chr/ \
+--w-ld-chr ~/eur_w_ld_chr/ \
+--out ~/gc_reaction_thalamus_proper
